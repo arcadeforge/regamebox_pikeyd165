@@ -150,7 +150,12 @@ void joy_RPi_exit(void)
 
 
 
-#define NRHC165BITS 32 /* 24 arcade inputs plus 8 leading bits used by existing mapping */ 
+#ifndef NRHC165BITS
+#define NRHC165BITS 32 /* 24 arcade inputs plus 8 leading bits used by existing mapping */
+#endif
+#if NRHC165BITS != 32 && NRHC165BITS != 96
+#error "NRHC165BITS must be 32 (arcade) or 96 (extended)"
+#endif 
 
 #define WAIT1 delayMicroseconds(1);
 
@@ -296,7 +301,7 @@ void joy_RPi_poll(void)
     extern bool skip_mouse_init;
     
     //mouse initialisiert?
-    if( skip_mouse_init == false) 
+    if( skip_mouse_init == false && NRHC165BITS == 96) 
       {
        mouse_handle_event();
       }
