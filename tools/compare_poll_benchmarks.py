@@ -9,7 +9,7 @@ from pathlib import Path
 
 def read_cycle(path):
     with Path(path).open(newline="") as f:
-        rows = list(csv.DictReader(f))
+        lines = f.readlines()\n        start = next((i for i, line in enumerate(lines) if line.startswith("metric,count,")), None)\n        if start is None:\n            raise ValueError(f"{path}: benchmark CSV header not found")\n        rows = list(csv.DictReader(lines[start:]))
     cycle = next((r for r in rows if r["metric"] == "cycle"), None)
     scan = next((r for r in rows if r["metric"] == "scan"), None)
     if not cycle or not scan:
