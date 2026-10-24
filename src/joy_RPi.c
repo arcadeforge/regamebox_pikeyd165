@@ -150,7 +150,7 @@ void joy_RPi_exit(void)
 
 
 
-#define NRHC165BITS 96 
+#define NRHC165BITS 32 /* 24 arcade inputs plus 8 leading bits used by existing mapping */ 
 
 #define WAIT1 delayMicroseconds(1);
 
@@ -234,7 +234,7 @@ void joy_RPi_poll(void)
 
 
     newGpio=(int) (pi2jamma_input[0] ^ 0xffffffff ) ;
-    newGpio = newGpio>>8;
+    newGpio = (newGpio >> 8) & 0x00ffffff;
     
 
     //iomask=0xffffffff;
