@@ -32,8 +32,8 @@
 #include "joy_RPi.h"
 
 
-#include <bcm2835.h>
-#include "gpio_joystick.h"
+#include "gpio_backend.h"
+
 
 #define HC165JOY 1
 
