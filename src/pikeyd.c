@@ -28,6 +28,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <time.h>
+#include <errno.h>
 
 #include "joy_RPi.h"
 
@@ -43,6 +46,13 @@ static void showVersion(void);
 
 bool no_key_debounce = false;
 bool skip_mouse_init = false;
+static unsigned int poll_us = 4000;
+static unsigned int benchmark_scans = 0;
+static uint64_t ns_now(void) {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+}
 
 int main(int argc, char *argv[])
 {
@@ -72,6 +82,22 @@ int main(int argc, char *argv[])
       printf("mouse disabled\n");
       skip_mouse_init = true;
     }
+    else if(!strcmp(argv[i], "--poll-us") && i+1 < argc){
+      char *end = NULL;
+      unsigned long v = strtoul(argv[++i], &end, 10);
+      if (!end || *end || v < 500 || v > 20000) {
+        fprintf(stderr, "--poll-us must be 500..20000\\n"); return 2;
+      }
+      poll_us = (unsigned int)v;
+    }
+    else if(!strcmp(argv[i], "--benchmark") && i+1 < argc){
+      char *end = NULL;
+      unsigned long v = strtoul(argv[++i], &end, 10);
+      if (!end || *end || v < 10 || v > 1000000) {
+        fprintf(stderr, "--benchmark must be 10..1000000 scans\\n"); return 2;
+      }
+      benchmark_scans = (unsigned int)v;
+    }
     else if(!strcmp(argv[i], "-ndb")){
       printf("no key debounce\n");
       no_key_debounce = true;
@@ -98,9 +124,32 @@ int main(int argc, char *argv[])
 
     if(joy_RPi_init()>=0){
 
+      uint64_t scan_total = 0, scan_min = UINT64_MAX, scan_max = 0;
+      uint64_t cycle_total = 0, cycle_min = UINT64_MAX, cycle_max = 0;
+      uint64_t previous_start = 0;
+      unsigned int count = 0;
       for(;;){
-	joy_RPi_poll();
-	usleep(4000);	
+        uint64_t start = ns_now();
+        if (previous_start) {
+          uint64_t cycle = start - previous_start;
+          cycle_total += cycle;
+          if (cycle < cycle_min) cycle_min = cycle;
+          if (cycle > cycle_max) cycle_max = cycle;
+        }
+        previous_start = start;
+        joy_RPi_poll();
+        uint64_t elapsed = ns_now() - start;
+        scan_total += elapsed;
+        if (elapsed < scan_min) scan_min = elapsed;
+        if (elapsed > scan_max) scan_max = elapsed;
+        count++;
+        if (benchmark_scans && count >= benchmark_scans) {
+          printf("metric,count,min_us,mean_us,max_us\\n");
+          printf("scan,%u,%.3f,%.3f,%.3f\\n",count,scan_min/1000.0,(double)scan_total/count/1000.0,scan_max/1000.0);
+          if (count > 1) printf("cycle,%u,%.3f,%.3f,%.3f\\n",count-1,cycle_min/1000.0,(double)cycle_total/(count-1)/1000.0,cycle_max/1000.0);
+          break;
+        }
+        usleep(poll_us);
       }
 
       joy_RPi_exit();
