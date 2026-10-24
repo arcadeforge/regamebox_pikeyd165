@@ -39,8 +39,8 @@
 #include "config.h"
 #include "uinput.h"
 
-#include <bcm2835.h>
-#include "gpio_joystick.h"
+#include "gpio_backend.h"
+
 
 
 
@@ -113,16 +113,16 @@ int joy_RPi_init(void)
 
 
   printf("bcm open\n");
-  if (!bcm2835_init())
+  if (pi_gpio_init() != 0)
     {
       printf("bcm open error\n");
       exit(-1);
     }
   // Set the pins to be an output
-  bcm2835_gpio_fsel(CLK, BCM2835_GPIO_FSEL_OUTP);
-  bcm2835_gpio_fsel(PL, BCM2835_GPIO_FSEL_OUTP);
+  /* GPIO directions are configured by libgpiod. */
+
   // Set the pin to be an input
-  bcm2835_gpio_fsel(DIN, BCM2835_GPIO_FSEL_INPT);
+
   
   
   /* Set the file descriptor to a dummy value. */
@@ -141,7 +141,7 @@ int joy_RPi_init(void)
 void joy_RPi_exit(void)
 {
   printf("bcm close\n");
-  bcm2835_close();
+  pi_gpio_close();
 }
 
 
@@ -152,7 +152,7 @@ void joy_RPi_exit(void)
 
 #define NRHC165BITS 96 
 
-#define WAIT1 delayMicroseconds(1);
+#define WAIT1 pi_gpio_delay_us(1);
 
 long unsigned int pi2jamma_input[4]={5,5,5,5};
 
@@ -168,20 +168,20 @@ long unsigned int __attribute__((optimize("-O2"))) Read_Port_HC165(long unsigned
   int i;
   int j=0;
 
-  bcm2835_gpio_write(CLK, HIGH);
+  pi_gpio_write(CLK, HIGH);
   WAIT1
   WAIT1
-  bcm2835_gpio_write(PL, LOW);
+  pi_gpio_write(PL, LOW);
   WAIT1
   WAIT1
-  bcm2835_gpio_write(PL, HIGH);
+  pi_gpio_write(PL, HIGH);
 
 
   // diese waits sind neu fuer irq setup Trackball irq
   // gemessen mit Oszi: 10usec Luecke
-  //  delayMicroseconds(9);
+  //  pi_gpio_delay_us(9);
 
-  delayMicroseconds(5);
+  pi_gpio_delay_us(5);
 
 
 
@@ -190,12 +190,13 @@ long unsigned int __attribute__((optimize("-O2"))) Read_Port_HC165(long unsigned
       val= val<<1 ;
       WAIT1
       WAIT1
-      uint8_t value = bcm2835_gpio_lev(DIN);
+      int value = pi_gpio_read(DIN);
+      if (value < 0) { perror("GPIO DIN read"); exit(EXIT_FAILURE); }
       val=val|value;
-      bcm2835_gpio_write(CLK, LOW);
+      pi_gpio_write(CLK, LOW);
       WAIT1
       WAIT1
-      bcm2835_gpio_write(CLK, HIGH);
+      pi_gpio_write(CLK, HIGH);
 
       if ( i%32 == 0 )
         {
