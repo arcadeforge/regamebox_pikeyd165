@@ -73,7 +73,7 @@ void pi_gpio_delay_us(unsigned int us)
     clock_gettime(CLOCK_MONOTONIC, &start);
     do {
         clock_gettime(CLOCK_MONOTONIC, &now);
-        elapsed = (uint64_t)(now.tv_sec - start.tv_sec) * 1000000000ULL +
-                  (uint64_t)(now.tv_nsec - start.tv_nsec);
+        elapsed = (uint64_t)((int64_t)(now.tv_sec - start.tv_sec) * 1000000000LL +
+                  (int64_t)(now.tv_nsec - start.tv_nsec));
     } while (elapsed < (uint64_t)us * 1000ULL);
 }
