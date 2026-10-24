@@ -13,7 +13,7 @@ CFLAGS=-O2 -Wstrict-prototypes -Wmissing-prototypes $(INCLUDE)
 CFLAGS=-O3 -funroll-loops -Wstrict-prototypes -Wmissing-prototypes $(INCLUDE)
 SRC := $(wildcard *.c)
 OBJ := $(patsubst %.c,%.o,$(SRC))
-LIBS=-lbcm2835
+LIBS=-lgpiod
 
 
 #get build dir and date
