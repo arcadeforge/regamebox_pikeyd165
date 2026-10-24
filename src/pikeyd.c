@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
       char *end = NULL;
       unsigned long v = strtoul(argv[++i], &end, 10);
       if (!end || *end || v < 500 || v > 20000) {
-        fprintf(stderr, "--poll-us must be 500..20000\\n"); return 2;
+        fprintf(stderr, "--poll-us must be 500..20000\n"); return 2;
       }
       poll_us = (unsigned int)v;
     }
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
       char *end = NULL;
       unsigned long v = strtoul(argv[++i], &end, 10);
       if (!end || *end || v < 10 || v > 1000000) {
-        fprintf(stderr, "--benchmark must be 10..1000000 scans\\n"); return 2;
+        fprintf(stderr, "--benchmark must be 10..1000000 scans\n"); return 2;
       }
       benchmark_scans = (unsigned int)v;
     }
@@ -144,9 +144,9 @@ int main(int argc, char *argv[])
         if (elapsed > scan_max) scan_max = elapsed;
         count++;
         if (benchmark_scans && count >= benchmark_scans) {
-          printf("metric,count,min_us,mean_us,max_us\\n");
-          printf("scan,%u,%.3f,%.3f,%.3f\\n",count,scan_min/1000.0,(double)scan_total/count/1000.0,scan_max/1000.0);
-          if (count > 1) printf("cycle,%u,%.3f,%.3f,%.3f\\n",count-1,cycle_min/1000.0,(double)cycle_total/(count-1)/1000.0,cycle_max/1000.0);
+          printf("metric,count,min_us,mean_us,max_us\n");
+          printf("scan,%u,%.3f,%.3f,%.3f\n",count,scan_min/1000.0,(double)scan_total/count/1000.0,scan_max/1000.0);
+          if (count > 1) printf("cycle,%u,%.3f,%.3f,%.3f\n",count-1,cycle_min/1000.0,(double)cycle_total/(count-1)/1000.0,cycle_max/1000.0);
           break;
         }
         usleep(poll_us);
@@ -171,6 +171,8 @@ static void showHelp(void)
   printf("  -v    version\n");
   printf("  -smi  skip mouse initialisation, no mouse/trackball devices are created\n");
   printf("  -ndb  no key debounce \n");
+  printf("  --poll-us N   sleep after scan (500..20000 us; default 4000)\n");
+  printf("  --benchmark N measure N scans and print timings\n");
   printf("  -h    this help\n");
 }
 
