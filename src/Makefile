@@ -14,7 +14,7 @@ CFLAGS=-O3 -funroll-loops -Wstrict-prototypes -Wmissing-prototypes $(INCLUDE)
 SRC := $(wildcard *.c)
 OBJ := $(patsubst %.c,%.o,$(SRC))
 SCAN_BITS ?= 32
-CFLAGS += -DNRHC165BITS=$(SCAN_BITS)
+override CFLAGS += -DNRHC165BITS=$(SCAN_BITS)
 LIBS=-lbcm2835
 
 

@@ -14,7 +14,7 @@ sudo ./pikeyd165 -smi -ndb --poll-us 1000 --benchmark 2000 > /tmp/pikeyd-1000.cs
 python3 ../tools/compare_poll_benchmarks.py /tmp/pikeyd-{4000,2000,1000}.csv
 ```
 
-The benchmark prints min/mean/max **scan** (HC165 read plus event processing) and **cycle** (start-to-start) in microseconds. A Python helper estimates phase-dependent polling wait assuming random button arrival phase. This is **not measured switch-to-uinput latency or screen latency**. Default poll is 4000 us; `--poll-us` accepts 500–20000 us; `--benchmark` accepts 10–1000000 scans. Keep `-ndb` for fair comparison.
+The benchmark prints min/mean/max **scan** (HC165 read plus event processing) and **cycle** (start-to-start) in microseconds. A Python helper estimates phase-dependent polling wait assuming random button arrival phase. This is **not measured switch-to-uinput latency or screen latency**. Default poll is 2000 us; `--poll-us` accepts 500–20000 us; `--benchmark` accepts 10–1000000 scans. Keep `-ndb` for fair comparison.
 
 Test twice, with normal CPU load and with high background load. Make sure all 24 buttons map correctly; the default optimized build clocks 32 bits to preserve the existing 24-input mapping. For extended hardware rebuild with `make clean && make SCAN_BITS=96`.
 

@@ -46,7 +46,7 @@ static void showVersion(void);
 
 bool no_key_debounce = false;
 bool skip_mouse_init = false;
-static unsigned int poll_us = 4000;
+static unsigned int poll_us = 2000;
 static unsigned int benchmark_scans = 0;
 static uint64_t ns_now(void) {
   struct timespec ts;
@@ -171,7 +171,7 @@ static void showHelp(void)
   printf("  -v    version\n");
   printf("  -smi  skip mouse initialisation, no mouse/trackball devices are created\n");
   printf("  -ndb  no key debounce \n");
-  printf("  --poll-us N   sleep after scan (500..20000 us; default 4000)\n");
+  printf("  --poll-us N   sleep after scan (500..20000 us; default 2000)\n");
   printf("  --benchmark N measure N scans and print timings\n");
   printf("  -h    this help\n");
 }

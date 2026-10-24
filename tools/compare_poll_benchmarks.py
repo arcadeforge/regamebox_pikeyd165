@@ -9,7 +9,11 @@ from pathlib import Path
 
 def read_cycle(path):
     with Path(path).open(newline="") as f:
-        lines = f.readlines()\n        start = next((i for i, line in enumerate(lines) if line.startswith("metric,count,")), None)\n        if start is None:\n            raise ValueError(f"{path}: benchmark CSV header not found")\n        rows = list(csv.DictReader(lines[start:]))
+        lines = f.readlines()
+    start = next((i for i, line in enumerate(lines) if line.startswith("metric,count,")), None)
+    if start is None:
+        raise ValueError(f"{path}: benchmark CSV header not found")
+    rows = list(csv.DictReader(lines[start:]))
     cycle = next((r for r in rows if r["metric"] == "cycle"), None)
     scan = next((r for r in rows if r["metric"] == "scan"), None)
     if not cycle or not scan:
@@ -20,11 +24,11 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("csv_files",nargs="+",help="stdout of --benchmark runs")
     args=p.parse_args()
-    print("file,cycle_ms,scan_ms,estimated_poll_wait_avg_ms,estimated_poll_wait_worst_ms")
+    print("file,cycle_ms,scan_ms,poll_hz,estimated_poll_wait_avg_ms,estimated_poll_wait_worst_ms")
     for path in args.csv_files:
         cycle, scan=read_cycle(path)
         # Assumes switch transitions are uniformly distributed across polling phases.
         # Not measured end-to-end input latency; input events also incur scan and scheduling.
-        print(f"{Path(path).name},{cycle/1000:.3f},{scan/1000:.3f},{cycle/2000:.3f},{cycle/1000:.3f}")
+        print(f"{Path(path).name},{cycle/1000:.3f},{scan/1000:.3f},{1_000_000/cycle:.1f},{cycle/2000:.3f},{cycle/1000:.3f}")
 if __name__ == "__main__":
     main()
